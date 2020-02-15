@@ -14,6 +14,8 @@ from os.path import join
 from cobra.test import test_all
 from cobra.test import create_test_model
 from cobra import Model, Reaction, Metabolite
+from cobra.util.solver import linear_reaction_coefficients
+from cobra.flux_analysis import flux_variability_analysis
 
 
 
@@ -157,7 +159,26 @@ class TutoTest():
     def simulatingFBA(self):
         model = cobra.test.create_test_model("textbook")
         solution = model.optimize()
-        print(solution)
+        # print(solution.status)
+        # print(solution.fluxes)
+        # print(solution.shadow_prices)
+        # print(model.summary())
+        # print(model.metabolites.nadh_c.summary())
+        # print(model.metabolites.atp_c.summary())
+        biomass_rxn = model.reactions.get_by_id('Biomass_Ecoli_core')
+        # print(linear_reaction_coefficients(model)) ## 1
+        # change the objective to ATPM
+        model.objective = "ATPM"
+
+        # The upper bound should be 1000, so that we get
+        # the actual optimal value
+        model.reactions.get_by_id("ATPM").upper_bound = 1000.
+        # print(linear_reaction_coefficients(model))
+        # print(model.summary()) ## objective id has changed it's ATPM
+
+        print(flux_variability_analysis(model, model.reactions[:10]))
+
+
 
 
 
